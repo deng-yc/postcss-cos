@@ -1,4 +1,7 @@
+const postcss = require('postcss')
+const path = require("path");
 const fs = require("fs");
+const md5File = require('md5-file');
 const COS = require('cos-nodejs-sdk-v5');
 // 创建实例
 
@@ -12,6 +15,8 @@ module.exports = postcss.plugin('postcss-cos', opts => {
     const appId = opts.appId,
         bucket = opts.bucket,
         region = opts.region;
+
+    console.log("POSTCSS-COS");
 
     async function uploadFile(key, file, retry) {
         var state = fs.statSync(file);
@@ -45,17 +50,22 @@ module.exports = postcss.plugin('postcss-cos', opts => {
     // Work with options here
     return function (root) {
         let uploadList = []
+
         root.walkDecls(/background/, decl => {
-            decl.value = decl.value.replace(/.+(png|svg|jpg|gif)/, match => {
-
-                console.log(match);
-
-                let file = path.join(process.cwd(), match)
-                let hash = md5File.sync(file, match)
-                // let upload = uploadFile(hash, file, 3);
-                // uploadList.push(upload)
-                return [opts.baseUrl || '', hash].join('/')
-            })
+            var matchs = decl.value.match(/url\(['|"](.+)['|"]\)/i);
+            if (matchs) {
+                var target_file = matchs[1];
+                var source_dirname = path.dirname(root.source.input.file);
+                var full_path = path.resolve(source_dirname, target_file);
+                const hash = md5File.sync(full_path);
+                var key = `${opts.path || 'weapp'}/${hash}`;
+                uploadList.push(uploadFile(key, full_path, 3));
+                var url = 'https://' + bucket + '-' + appId + '.cos-website.' + region + '.myqcloud.com/' + key;
+                if (opts.cdnDomain) {
+                    url = `${opts.cdnDomain}/` + key
+                }
+                decl.value = `background:url("${url}")`;
+            }
         })
         return Promise.all(uploadList)
     }

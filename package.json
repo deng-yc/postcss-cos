@@ -9,6 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cos-nodejs-sdk-v5": "^2.5.9"
+    "cos-nodejs-sdk-v5": "^2.5.9",
+    "md5-file": "^4.0.0",
+    "postcss": "^7.0.17"
   }
 }
