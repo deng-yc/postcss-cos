@@ -3,6 +3,14 @@ const path = require("path");
 const fs = require("fs");
 const md5File = require('md5-file');
 const COS = require('cos-nodejs-sdk-v5');
+const ora = require('ora');
+
+
+const tip = (uploaded, total, file) => {
+    let percentage = total == 0 ? 0 : Math.round((uploaded / total) * 100);
+    return `Uploading to Tencent COS[${file}]: ${percentage == 0 ? '' : percentage + '% '}${uploaded}/${total} files uploaded`;
+};
+
 // 创建实例
 
 module.exports = postcss.plugin('postcss-cos', opts => {
@@ -12,23 +20,23 @@ module.exports = postcss.plugin('postcss-cos', opts => {
         SecretKey: opts.secretKey //'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
     });
 
-    const appId = opts.appId,
-        bucket = opts.bucket,
+    const bucket = opts.bucket,
         region = opts.region;
-
-    console.log("POSTCSS-COS");
-
     async function uploadFile(key, file, retry) {
         var state = fs.statSync(file);
         return new Promise((resolve, reject) => {
+            let spinner = ora({
+                text: tip(loaded, total, key),
+                color: 'green'
+            }).start();
             cos.putObject({
-                Bucket: bucket + '-' + appId,
+                Bucket: bucket,
                 Region: region,
                 Key: key,
                 ContentLength: state.size,
                 Body: fs.createReadStream(file),
-                onProgress: function onProgress(progressData) {
-                    console.log("正在上传", key, progressData);
+                onProgress: function onProgress({ loaded, total }) {
+                    spinner.text = tip(loaded, total, key);
                 }
             }, (err, data) => {
                 if (err) {
@@ -60,11 +68,11 @@ module.exports = postcss.plugin('postcss-cos', opts => {
                 const hash = md5File.sync(full_path);
                 var key = `${opts.path || 'weapp'}/${hash}`;
                 uploadList.push(uploadFile(key, full_path, 3));
-                var url = 'https://' + bucket + '-' + appId + '.cos-website.' + region + '.myqcloud.com/' + key;
+                var url = `https://${bucket}.cos-website.${region}.myqcloud.com/${key}`;
                 if (opts.cdnDomain) {
                     url = `${opts.cdnDomain}/` + key
                 }
-                decl.value = `background:url("${url}")`;
+                decl.value = `url("${url}")`;
             }
         })
         return Promise.all(uploadList)
