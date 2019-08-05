@@ -1,7 +1,7 @@
 {
   "name": "postcss-cos",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.2",
+  "description": "postcss插件,将css中的background图片上传到腾讯云服务器",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

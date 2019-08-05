@@ -6,9 +6,8 @@ const COS = require('cos-nodejs-sdk-v5');
 const ora = require('ora');
 
 
-const tip = (uploaded, total, file) => {
-    let percentage = total == 0 ? 0 : Math.round((uploaded / total) * 100);
-    return `Uploading to Tencent COS[${file}]: ${percentage == 0 ? '' : percentage + '% '}${uploaded}/${total} files uploaded`;
+const tip = (src, dest) => {
+    return `上传文件[${src} - > ${dest}]`;
 };
 
 // 创建实例
@@ -16,17 +15,16 @@ const tip = (uploaded, total, file) => {
 module.exports = postcss.plugin('postcss-cos', opts => {
     opts = opts || {}
     const cos = new COS({
-        SecretId: opts.secretId, // 'AKIDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        SecretKey: opts.secretKey //'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        SecretId: opts.secretId,
+        SecretKey: opts.secretKey
     });
-
     const bucket = opts.bucket,
         region = opts.region;
     async function uploadFile(key, file, retry) {
         var state = fs.statSync(file);
         return new Promise((resolve, reject) => {
             let spinner = ora({
-                text: tip(0, 0, key),
+                text: tip(file, key),
                 color: 'green'
             }).start();
             cos.putObject({
@@ -34,14 +32,9 @@ module.exports = postcss.plugin('postcss-cos', opts => {
                 Region: region,
                 Key: key,
                 ContentLength: state.size,
-                Body: fs.createReadStream(file),
-                onProgress: function onProgress(progressData) {
-                    if (progressData) {
-                        const { loaded, total } = progressData;
-                        spinner.text = tip(loaded, total, key);
-                    }
-                }
+                Body: fs.createReadStream(file)
             }, (err, data) => {
+                spinner.succeed();
                 if (err) {
                     console.error("上传文件出错", err);
                     reject()
