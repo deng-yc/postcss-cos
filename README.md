@@ -51,7 +51,7 @@ weapp: {
         autoprefixer: {
           enable: true
         },
-        "postcss-assets-urls": {
+        "postcss-cos": {
           enable: true,
           config: {
             domain: "http://cdn.io"  //自定义cdn域名
