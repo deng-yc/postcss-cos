@@ -31,7 +31,7 @@ yarn add postcss-cos
 ```
 postcss([
   require("postcss-cos")({
-    domain: "http://cdn.io"  //自定义cdn域名
+    domain: "http://cdn.io"  //自定义cdn域名,不写默认为cos地址
     secretId: 'AKxxxxxxxxxxxxxxxxxxxxxx',
     secretKey: 'xxxxxxxxxxxxxxxxxxxxxx',
     bucket: 'xxxx-125000000',
