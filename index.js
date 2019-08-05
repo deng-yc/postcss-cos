@@ -26,7 +26,7 @@ module.exports = postcss.plugin('postcss-cos', opts => {
         var state = fs.statSync(file);
         return new Promise((resolve, reject) => {
             let spinner = ora({
-                text: tip(loaded, total, key),
+                text: tip(0, 0, key),
                 color: 'green'
             }).start();
             cos.putObject({
@@ -35,8 +35,11 @@ module.exports = postcss.plugin('postcss-cos', opts => {
                 Key: key,
                 ContentLength: state.size,
                 Body: fs.createReadStream(file),
-                onProgress: function onProgress({ loaded, total }) {
-                    spinner.text = tip(loaded, total, key);
+                onProgress: function onProgress(progressData) {
+                    if (progressData) {
+                        const { loaded, total } = progressData;
+                        spinner.text = tip(loaded, total, key);
+                    }
                 }
             }, (err, data) => {
                 if (err) {
