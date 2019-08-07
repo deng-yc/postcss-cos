@@ -1,6 +1,6 @@
 {
   "name": "postcss-cos",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "postcss插件,将css中的background图片上传到腾讯云服务器",
   "main": "index.js",
   "scripts": {

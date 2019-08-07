@@ -20,7 +20,32 @@ module.exports = postcss.plugin('postcss-cos', opts => {
     });
     const bucket = opts.bucket,
         region = opts.region;
+
+    async function headFile(key) {
+        return new Promise((resolve, reject) => {
+            cos.headObject({
+                Bucket: bucket,
+                Region: region,
+                Key: key,
+            }, (err, data) => {
+                if (err) {
+                    if (err.statusCode == 404) {
+                        resolve(false)
+                    } else {
+                        reject(err);
+                    }
+                } else {
+                    resolve(true)
+                }
+            })
+        })
+
+    }
     async function uploadFile(key, file, retry) {
+        var exists = await headFile(key);
+        if (exists) {
+            return;
+        }
         var state = fs.statSync(file);
         return new Promise((resolve, reject) => {
             let spinner = ora({
