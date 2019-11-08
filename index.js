@@ -84,7 +84,7 @@ module.exports = postcss.plugin('postcss-cos', opts => {
         let uploadList = [];
 
         root.walkDecls(/background|src/, decl => {
-            var matchs = decl.value.match(/url\(['|"](.+)['|"]\)/i);
+            var matchs = decl.value.match(/url\(['|"](.*?)['|"]\)/i);
             if (matchs) {
                 var target_file = matchs[1].split('#')[0];
 
