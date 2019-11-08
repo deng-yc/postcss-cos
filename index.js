@@ -92,7 +92,8 @@ module.exports = postcss.plugin('postcss-cos', opts => {
                     var source_dirname = path.dirname(root.source.input.file);
                     var full_path = path.resolve(source_dirname, target_file);
                     const hash = md5File.sync(full_path);
-                    var key = `${opts.path || 'weapp'}/${hash}`;
+                    const extname = path.extname(full_path);
+                    var key = `${opts.path || 'weapp'}/${hash}${extname}`;
                     uploadList.push(uploadFile(key, full_path, 3));
                     var url = `https://${bucket}.cos.${region}.myqcloud.com/${key}`;
                     if (opts.cdnDomain) {
